@@ -572,6 +572,7 @@ with tab_call:
 # ----------------------------------------------------------------------
 
 with tab_about:
+    st.markdown("Live app: https://group-10.streamlit.app")
     st.subheader("Held-out results")
     st.caption(f"Scored on {Q['speaker'].nunique()} speakers the model "
                f"never saw ({n_all} calls), opened once.")

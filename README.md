@@ -4,7 +4,7 @@ A small web app built on the speech emotion model from the main package. It show
 help a quality-assurance reviewer decide which calls to hear first: it predicts one of 8 emotions for a recording,
 gives a confidence, and flags the call for review when the confidence is low.
 
-Live app: (link added after deployment)
+Live app: https://group-10.streamlit.app
 
 ## Run it locally
 
