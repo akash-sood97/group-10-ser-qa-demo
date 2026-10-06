@@ -134,17 +134,26 @@ def show(chart, source=None):
     st.caption(source or U.SOURCE_NOTE)
 
 
+def held_source():
+    """Source caption for charts over the held-out queue."""
+    return (f"{U.SOURCE_NOTE} · this chart: {len(Q)} held-out calls from "
+            f"{Q['speaker'].nunique()} speakers")
+
+
+CAT_AXIS = alt.Axis(labelOverlap=False, labelLimit=120)
+
+
 def prob_chart(probs, title):
     """Eight-emotion probability bars."""
     df = pd.DataFrame({"emotion": ORDER,
                        "probability": np.asarray(probs) * 100})
     return alt.Chart(df, title=title).mark_bar().encode(
-        y=alt.Y("emotion:N", sort=ORDER, title="Emotion"),
+        y=alt.Y("emotion:N", sort=ORDER, title="Emotion", axis=CAT_AXIS),
         x=alt.X("probability:Q", title="Probability (%)",
                 scale=alt.Scale(domain=[0, 100])),
         color=emotion_color(),
         tooltip=["emotion", alt.Tooltip("probability:Q", format=".1f")],
-    ).properties(height=240)
+    ).properties(height=28 * len(ORDER))
 
 
 def prob_title(probs):
@@ -244,8 +253,8 @@ with tab_queue:
                      "audio-dataset label are in the flagged set.")
     k[3].metric("Precision of flags", pct(n_hit / n_flag),
                 help=f"{n_hit} of {n_flag} flagged calls are negative.")
-    k[4].metric("Random sample, same size",
-                f"catches ≈ {pct(flag_rate)}",
+    k[4].metric("Random sample of the same size catches",
+                pct(flag_rate),
                 help="A random sample of this size would catch about "
                      "this share of the negative calls.")
     st.caption(rule_words() + " Flagged calls are heard first, ordered "
@@ -254,28 +263,33 @@ with tab_queue:
     # Chart 1: the flagged queue in order.
     fq = flagged.assign(confidence_pct=flagged["confidence"] * 100,
                         emotion=flagged["pred_emotion"])
-    bars = alt.Chart(
+    lo_y = int(np.floor(THR * 100)) - 5
+    dots = alt.Chart(
         fq, title=(f"{n_flag} flagged calls in queue order: confidence "
                    f"runs from {pct(fq['confidence'].max())} down to "
                    f"{pct(fq['confidence'].min())}")
-    ).mark_bar().encode(
-        y=alt.Y("queue_position:O", sort="ascending",
-                title="Queue position (1 = heard first)",
-                axis=alt.Axis(labelOverlap=True)),
-        x=alt.X("confidence_pct:Q", title="Confidence (%)",
-                scale=alt.Scale(domain=[0, 100])),
+    ).mark_circle(size=45, opacity=0.9).encode(
+        x=alt.X("queue_position:Q", title="Queue position (1 = heard first)",
+                scale=alt.Scale(domain=[0, int(fq["queue_position"].max()) + 1],
+                                nice=False),
+                axis=alt.Axis(labelOverlap=False)),
+        y=alt.Y("confidence_pct:Q", title="Confidence (%)",
+                scale=alt.Scale(domain=[lo_y, 100]),
+                axis=alt.Axis(labelOverlap=False)),
         color=emotion_color(title="Predicted emotion"),
         tooltip=["queue_position", "emotion",
                  alt.Tooltip("confidence_pct:Q", format=".1f")],
-    ).properties(height=alt.Step(4))
-    rule = alt.Chart(pd.DataFrame({"x": [THR * 100]})).mark_rule(
-        color=U.INK, strokeDash=[5, 3]).encode(x="x:Q")
+    ).properties(height=260)
+    rule = alt.Chart(pd.DataFrame({"y": [THR * 100]})).mark_rule(
+        color=U.INK, strokeDash=[5, 3]).encode(y="y:Q")
     label = alt.Chart(pd.DataFrame(
-        {"x": [THR * 100], "t": [f"threshold {pct(THR)}"]})
-    ).mark_text(align="right", dx=-4, dy=-4, baseline="bottom",
-                color=U.INK).encode(x="x:Q", text="t:N",
-                                    y=alt.value(10))
-    show(bars + rule + label)
+        {"x": [int(fq["queue_position"].max()) + 1], "y": [THR * 100],
+         "t": [f"threshold {pct(THR)}"]})
+    ).mark_text(align="right", dx=-4, dy=-6, baseline="bottom",
+                color=U.INK).encode(x="x:Q", y="y:Q", text="t:N")
+    show(dots + rule + label, held_source())
+    st.caption(f"The y-axis starts at {lo_y}% to show the spread of "
+               f"confidence above the {pct(THR)} threshold.")
 
     # Chart 2 and 3 side by side: confusion heatmap and recall.
     left, right = st.columns(2)
@@ -290,19 +304,27 @@ with tab_queue:
             long, title=(f"Most common mix-up: {off['true']} heard as "
                          f"{off['pred']} ({int(off['n'])} calls)"))
         heat = base.mark_rect().encode(
-            x=alt.X("pred:N", sort=ORDER, title="Predicted emotion"),
+            x=alt.X("pred:N", sort=ORDER, title="Predicted emotion",
+                    axis=CAT_AXIS),
             y=alt.Y("true:N", sort=ORDER,
-                    title="Audio dataset label (calls)"),
-            color=emotion_color("true", "Dataset label"),
-            opacity=alt.Opacity("n:Q", legend=None,
-                                scale=alt.Scale(range=[0.05, 0.85])),
+                    title="Audio dataset label (calls)", axis=CAT_AXIS),
+            color=alt.Color("n:Q", title="Calls",
+                            scale=alt.Scale(scheme="blues"),
+                            legend=alt.Legend(orient="bottom")),
             tooltip=["true", "pred", "n"])
-        text = base.mark_text(color=U.INK).encode(
-            x=alt.X("pred:N", sort=ORDER), y=alt.Y("true:N", sort=ORDER),
+        text = base.mark_text().encode(
+            x=alt.X("pred:N", sort=ORDER, axis=CAT_AXIS),
+            y=alt.Y("true:N", sort=ORDER, axis=CAT_AXIS),
             text=alt.Text("n:Q"),
+            color=alt.condition(alt.datum.n > long["n"].max() / 2,
+                                alt.value("white"), alt.value(U.INK)),
             opacity=alt.condition(alt.datum.n > 0, alt.value(1),
                                   alt.value(0)))
-        show((heat + text).properties(height=300))
+        st.altair_chart(
+            (heat + text).properties(width=400, height=400
+                                     ).configure_view(strokeWidth=0),
+            width="content")
+        st.caption(held_source())
     with right:
         rec = T["recall"][["true_emotion", "wavlm"]].rename(
             columns={"true_emotion": "emotion", "wavlm": "recall"})
@@ -313,13 +335,13 @@ with tab_queue:
                         f"({lo['recall']:.1f}%), {hi['emotion']} most "
                         f"({hi['recall']:.1f}%)")
         ).mark_bar().encode(
-            y=alt.Y("emotion:N", sort=ORDER, title="Emotion"),
+            y=alt.Y("emotion:N", sort=ORDER, title="Emotion", axis=CAT_AXIS),
             x=alt.X("recall:Q", title="Recall on held-out calls (%)",
                     scale=alt.Scale(domain=[0, 100])),
             color=emotion_color(),
             tooltip=["emotion", alt.Tooltip("recall:Q", format=".1f")],
-        ).properties(height=300)
-        show(rchart)
+        ).properties(height=28 * len(ORDER))
+        show(rchart, held_source())
 
     # Filters.
     st.subheader("Queue")
@@ -379,7 +401,7 @@ with tab_queue:
                 st.caption("No audio is bundled for this call.")
         with d2:
             probs = row[[f"p_{e}" for e in ORDER]].to_numpy(float)
-            show(prob_chart(probs, prob_title(probs)))
+            show(prob_chart(probs, prob_title(probs)), held_source())
 
 
 # ----------------------------------------------------------------------
@@ -447,7 +469,8 @@ def call_card(c):
                 tl, title=(f"{top.index[0].capitalize()} is the top emotion"
                            f" in {int(top.iloc[0])} of {len(wins)} windows")
             ).mark_bar().encode(
-                x=alt.X("start:Q", title="Time in call (seconds)"),
+                x=alt.X("start:Q", title="Time in call (seconds)",
+                         axis=alt.Axis(labelOverlap=False)),
                 x2="end:Q", y=alt.value(20),
                 color=emotion_color(title="Predicted emotion"),
                 opacity=alt.Opacity("confidence:Q", legend=alt.Legend(
@@ -466,14 +489,16 @@ def call_card(c):
                              f"{res['pred_emotion']} leads on average at "
                              f"{pct(res['confidence'])}")
             ).mark_area().encode(
-                x=alt.X("time:Q", title="Time in call (seconds)"),
+                x=alt.X("time:Q", title="Time in call (seconds)",
+                        axis=alt.Axis(labelOverlap=False)),
                 y=alt.Y("probability:Q", stack="zero",
-                        title="Probability (%, stacked)"),
+                        title="Probability (%, stacked)",
+                        axis=alt.Axis(labelOverlap=False)),
                 color=emotion_color(),
                 order=alt.Order("emotion:N", sort="ascending"),
                 tooltip=["emotion", alt.Tooltip("probability:Q",
                                                 format=".1f")],
-            ).properties(height=220)
+            ).properties(height=28 * len(ORDER))
             show(achart, live)
 
 
@@ -492,7 +517,7 @@ with tab_call:
         sample = st.selectbox(
             "Try a sample call", list(clips["clip_file"]), key="sample_pick",
             format_func=lambda f: (
-                f"{f[:2]}/{f[3:]} · "
+                f"Person {f[:2]} · {Path(f[3:]).stem} · dataset label: "
                 f"{clips.set_index('clip_file').loc[f, 'true_emotion']}"))
         go = st.button("Score sample call", key="score_sample")
 
