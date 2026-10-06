@@ -1,0 +1,4 @@
+H,hypothesis,verdict,evidence,so we
+H37,The selected model keeps its development performance on unseen speakers,supported,held-out macro-F1 0.7596 (inside the development band 0.7065 to 0.8005),quote the held-out number next to the development number
+H38,The gain of WavLM over the classical rung holds on unseen speakers,supported,gain +0.1822 macro-F1; ahead on 6 of 6 speakers,state the encoder's gain as measured on unseen speakers
+H39,The flag rule fixed on development speakers keeps its behaviour on unseen speakers,partly supported,"flag rate 39.2%, capture 70.3%, precision 95.7% at threshold 0.827",quote the flag rule with its held-out flag rate and capture

@@ -1,0 +1,9 @@
+true_emotion,logreg,wavlm
+neutral,58.3,70.8
+calm,72.9,89.6
+sad,52.1,64.6
+disgust,64.6,81.2
+happy,56.2,79.2
+surprised,47.9,83.3
+fearful,39.6,56.2
+angry,70.8,81.2

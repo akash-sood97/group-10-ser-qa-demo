@@ -1,0 +1,14 @@
+{
+  "rung": "wavlm",
+  "flag_rate": 0.3,
+  "threshold": 0.827,
+  "negative_emotions": [
+    "angry",
+    "fearful",
+    "sad",
+    "disgust"
+  ],
+  "dev_capture": 0.5417,
+  "dev_precision": 0.963,
+  "source": "speaker-grouped 6-fold CV, 1,080 development clips"
+}

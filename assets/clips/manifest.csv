@@ -1,0 +1,17 @@
+clip_file,filepath,speaker,true_emotion,saved_pred_emotion,saved_confidence
+01_01-01-01-01-01.wav,data/Person01/01-01-01-01-01.wav,01,neutral,neutral,0.76149
+01_01-01-02-01-01.wav,data/Person01/01-01-02-01-01.wav,01,neutral,happy,0.72045
+01_02-01-01-01-01.wav,data/Person01/02-01-01-01-01.wav,01,calm,calm,0.61447
+04_02-01-02-01-04.wav,data/Person04/02-01-02-01-04.wav,04,calm,sad,0.69806
+01_04-01-01-01-01.wav,data/Person01/04-01-01-01-01.wav,01,sad,sad,0.83246
+01_04-02-02-01-01.wav,data/Person01/04-02-02-01-01.wav,01,sad,happy,0.53067
+01_07-01-01-01-01.wav,data/Person01/07-01-01-01-01.wav,01,disgust,disgust,0.99354
+01_07-02-01-02-01.wav,data/Person01/07-02-01-02-01.wav,01,disgust,surprised,0.95468
+01_03-01-01-01-01.wav,data/Person01/03-01-01-01-01.wav,01,happy,happy,0.99126
+04_03-01-01-01-04.wav,data/Person04/03-01-01-01-04.wav,04,happy,neutral,0.65602
+01_08-01-01-01-01.wav,data/Person01/08-01-01-01-01.wav,01,surprised,surprised,0.99464
+01_08-02-02-01-01.wav,data/Person01/08-02-02-01-01.wav,01,surprised,fearful,0.69267
+01_06-02-01-01-01.wav,data/Person01/06-02-01-01-01.wav,01,fearful,fearful,0.96249
+01_06-01-01-01-01.wav,data/Person01/06-01-01-01-01.wav,01,fearful,sad,0.98438
+01_05-01-01-01-01.wav,data/Person01/05-01-01-01-01.wav,01,angry,angry,0.99654
+01_05-01-02-01-01.wav,data/Person01/05-01-02-01-01.wav,01,angry,happy,0.5106

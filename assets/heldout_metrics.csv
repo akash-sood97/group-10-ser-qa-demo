@@ -1,0 +1,4 @@
+model,macro_f1,accuracy,balanced_accuracy,ci_low,ci_high
+majority,0.0294,0.1333,0.125,,
+logreg,0.5775,0.5778,0.5781,,
+wavlm,0.7596,0.7611,0.7578,0.6527,0.8519

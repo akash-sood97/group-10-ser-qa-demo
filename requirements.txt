@@ -1,0 +1,12 @@
+# QA demo dependencies. Same pins as Modelling/requirements.txt, except pandas (streamlit 1.51.0 needs pandas<3).
+# The extra index serves the CPU-only build of torch (no multi-GB CUDA packages).
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+streamlit==1.51.0
+altair==5.5.0
+numpy==2.3.5
+scipy==1.17.1
+pandas==2.3.3
+soundfile==0.14.0
+torch==2.14.0
+transformers==5.17.0
