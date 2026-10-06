@@ -153,7 +153,7 @@ def prob_chart(probs, title):
                 scale=alt.Scale(domain=[0, 100])),
         color=emotion_color(),
         tooltip=["emotion", alt.Tooltip("probability:Q", format=".1f")],
-    ).properties(height=28 * len(ORDER))
+    ).properties(height=alt.Step(28))
 
 
 def prob_title(probs):
@@ -340,7 +340,7 @@ with tab_queue:
                     scale=alt.Scale(domain=[0, 100])),
             color=emotion_color(),
             tooltip=["emotion", alt.Tooltip("recall:Q", format=".1f")],
-        ).properties(height=28 * len(ORDER))
+        ).properties(height=alt.Step(28))
         show(rchart, held_source())
 
     # Filters.
