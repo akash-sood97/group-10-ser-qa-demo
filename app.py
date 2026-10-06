@@ -312,14 +312,17 @@ with tab_queue:
                             scale=alt.Scale(scheme="blues"),
                             legend=alt.Legend(orient="bottom")),
             tooltip=["true", "pred", "n"])
-        text = base.mark_text().encode(
+        # Label colour is decided here, not in a chart expression, so the
+        # spec renders the same in every Vega-Lite version; empty cells
+        # get no label.
+        labels = long[long["n"] > 0].assign(
+            ink=lambda d: np.where(d["n"] > d["n"].max() / 2,
+                                   "white", U.INK))
+        text = alt.Chart(labels).mark_text().encode(
             x=alt.X("pred:N", sort=ORDER, axis=CAT_AXIS),
             y=alt.Y("true:N", sort=ORDER, axis=CAT_AXIS),
             text=alt.Text("n:Q"),
-            color=alt.condition(alt.datum.n > long["n"].max() / 2,
-                                alt.value("white"), alt.value(U.INK)),
-            opacity=alt.condition(alt.datum.n > 0, alt.value(1),
-                                  alt.value(0)))
+            color=alt.Color("ink:N", scale=None))
         st.altair_chart(
             (heat + text).properties(width=400, height=400
                                      ).configure_view(strokeWidth=0),
